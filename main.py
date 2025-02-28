@@ -1,5 +1,4 @@
-import sys
-import time
+
 import threading
 import asyncio
 from typing import Dict
@@ -8,8 +7,6 @@ from api_solver import create_app
 from sync_solver import get_turnstile_token as sync_solve
 from async_solver import get_turnstile_token as async_solve
 from logmagix import Logger, Loader
-
-
 class TurnstileTester:
     def __init__(self):
         self.log = Logger(github_repository="https://github.com/sexfrance/Turnstile-Solver")
