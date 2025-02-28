@@ -15,56 +15,62 @@ A Python-based solution for solving Cloudflare Turnstile challenges quickly (4-6
   </p>
 </div>
 
-### ⚙️ Installation
+## 📋 Table of Contents
+
+- [Installation](#️-installation)
+- [Features](#-features)
+- [Usage Examples](#-usage-examples)
+- [Advanced Usage](#-advanced-usage)
+- [API Documentation](#-api-documentation)
+- [Command Line Arguments](#-command-line-arguments)
+- [Docker Image](#-docker-image)
+- [Disclaimers](#-disclaimers)
+- [ChangeLog](#-changelog)
+
+## ⚙️ Installation
 
 - Requires: `Python 3.8+`
 - Make a python virtual environment: `python3 -m venv venv`
 - Source the environment: `venv\Scripts\activate` (Windows) / `source venv/bin/activate` (macOS, Linux)
 - Install the requirements: `pip install -r requirements.txt`
-- Install chrominium: `patchright install chromium` / `python -m patchright install chromium`
+- Install chromium: `patchright install chromium` / `python -m patchright install chromium`
 - Start: `python main.py` to access all solvers through an interactive interface
 
----
+## 🔥 Features
 
-### 🔥 Features
-
-- **Multi-Browser Pool System**: Manages a pool of up to 10 browsers for concurrent solving
-- **Page Pooling**: Efficient page reuse and management within each browser instance
-- **Three Solving Modes**:
-  - Synchronous solver for simple use cases
-  - Asynchronous solver for better performance
-  - API server for web-based integrations
-- **Browser Configuration**:
-  - Headless mode support with user agent customization
-  - Automated browser cleanup and session management
-  - Custom user agent support for better stealth
-- **Resource Optimization**:
-  - Smart browser and page lifecycle management
-  - Efficient memory usage and cleanup
-  - Automatic resource scaling
-- **Advanced Features**:
-  - Cookie support for authentication
-  - Custom action and cdata parameters
-  - Invisible & visible challenge support
-  - Comprehensive error handling
+- **Multi-Browser Support**:
+  - Chromium (default) - Fast and reliable
+  - Chrome - For persistent sessions
+  - Camoufox - Enhanced anti-bot evasion
+- **Multiple Solving Modes**:
+  - **Synchronous**: Simple direct API for basic use cases
+  - **Asynchronous**: High-performance async API
+  - **API Server**: Web service for remote use
+- **Performance Optimization**:
+  - Browser pooling with multiple instances
+  - Page reuse and state management
+  - Multi-threaded parallel solving
+- **Advanced Capabilities**:
+  - Cookie and session handling
+  - Action and cdata parameter support
+  - Invisible and visible challenge support
+  - Custom user agent configuration
+  - Headless mode with proper stealth
 - **Developer Tools**:
-  - Debug logging system
-  - Interactive CLI interface
-  - Built-in API documentation
-  - Performance metrics tracking
+  - Comprehensive logging system
+  - Debug mode for troubleshooting
+  - Detailed error reporting
+  - Performance metrics
 
----
-
-#### 📹 Preview
+## 📹 Preview
 
 ![Preview](https://i.imgur.com/YI6RZ5P.gif)
 
----
+## 🚀 Usage Examples
 
-### 🚀 Usage Examples
+### Synchronous Usage
 
 ```python
-# Synchronous Usage
 from sync_solver import get_turnstile_token
 
 result = get_turnstile_token(
@@ -74,8 +80,11 @@ result = get_turnstile_token(
     headless=True,
     user_agent="Mozilla/5.0 ..."
 )
+```
 
-# Asynchronous Usage
+### Asynchronous Usage
+
+```python
 from async_solver import get_turnstile_token
 import asyncio
 
@@ -87,21 +96,15 @@ async def main():
         headless=True,
         user_agent="Mozilla/5.0 ..."
     )
+```
 
-# API Server Usage
+### API Server Usage
+
+```sh
 curl "http://localhost:5000/turnstile?url=https://example.com&sitekey=your-site-key&invisible=true&headless=true&useragent=Mozilla/5.0..."
 ```
 
----
-
-### ❗ Disclaimers
-
-- I am not responsible for anything that may happen, such as API Blocking, IP ban, etc.
-- This was a quick project that was made for fun and personal use if you want to see further updates, star the repo & create an "issue" [here](https://github.com/sexfrance/Turnstile-Solver/issues/)
-
----
-
-### 🔧 Command line arguments
+## 🔧 Command Line Arguments
 
 | Parameter      | Default     | Type      | Description                                                                       |
 | -------------- | ----------- | --------- | --------------------------------------------------------------------------------- |
@@ -113,11 +116,9 @@ curl "http://localhost:5000/turnstile?url=https://example.com&sitekey=your-site-
 | `--host`       | `127.0.0.1` | `string`  | Specifies the IP address the API solver runs on.                                  |
 | `--port`       | `5000`      | `integer` | Sets the port the API solver listens on.                                          |
 
----
+## 🐳 Docker Image
 
-### 🐳 Docker Image
-
-#### Running the Container
+### Running the Container
 
 To start the container, use:
 
@@ -127,7 +128,7 @@ To start the container, use:
 docker run -d -p 3389:3389 -p 5000:5000 -e TZ=Asia/Baku --name turnstile_solver theyka/turnstile_solver:latest
 ```
 
-#### Connecting to the Container
+### Connecting to the Container
 
 1. Use an **RDP client** (like Windows Remote Desktop, Remmina, or FreeRDP)
 2. Connect to `localhost:3389`
@@ -136,17 +137,15 @@ docker run -d -p 3389:3389 -p 5000:5000 -e TZ=Asia/Baku --name turnstile_solver 
    - **Password:** root
 4. After this, you can start the solver by navigating to the `Turnstile-Solver` folder.
 
----
+## 📡 API Documentation
 
-### 📡 API Documentation
-
-#### Solve turnstile
+### Solve turnstile
 
 ```http
   GET /turnstile?url=https://example.com&sitekey=0x4AAAAAAA
 ```
 
-#### Request Parameters:
+### Request Parameters:
 
 | Parameter | Type   | Description                                                          | Required |
 | --------- | ------ | -------------------------------------------------------------------- | -------- |
@@ -155,7 +154,7 @@ docker run -d -p 3389:3389 -p 5000:5000 -e TZ=Asia/Baku --name turnstile_solver 
 | `action`  | string | Action to trigger during CAPTCHA solving, e.g., `login`              | No       |
 | `cdata`   | string | Custom data that can be used for additional CAPTCHA parameters.      | No       |
 
-#### Response:
+### Response:
 
 If the request is successfully received, the server will respond with a `task_id` for the CAPTCHA solving task:
 
@@ -165,19 +164,19 @@ If the request is successfully received, the server will respond with a `task_id
 }
 ```
 
-#### Get Result
+### Get Result
 
 ```http
   GET /result?id=f0dbe75b-fa76-41ad-89aa-4d3a392040af
 ```
 
-#### Request Parameters:
+### Request Parameters:
 
 | Parameter | Type   | Description                                                | Required |
 | --------- | ------ | ---------------------------------------------------------- | -------- |
 | `id`      | string | The unique task ID returned from the `/turnstile` request. | Yes      |
 
-#### Response:
+### Response:
 
 If the CAPTCHA is solved successfully, the server will respond with the following information:
 
@@ -188,9 +187,12 @@ If the CAPTCHA is solved successfully, the server will respond with the followin
 }
 ```
 
----
+## ❗ Disclaimers
 
-### 📜 ChangeLog
+- I am not responsible for anything that may happen, such as API Blocking, IP ban, etc.
+- This was a quick project that was made for fun and personal use if you want to see further updates, star the repo & create an "issue" [here](https://github.com/sexfrance/Turnstile-Solver/issues/)
+
+## 📜 ChangeLog
 
 ```diff
 v0.0.1 ⋮ 21/10/2024
@@ -252,8 +254,6 @@ v0.1.3 ⋮ 22/02/2025
 + Implemented multi-threaded mode for enhanced performance
 + Added method to configure host and port for API server
 ```
-
----
 
 <p align="center">
   <img src="https://img.shields.io/github/license/sexfrance/Turnstile-Solver.svg?style=for-the-badge&labelColor=black&color=f429ff&logo=IOTA"/>
