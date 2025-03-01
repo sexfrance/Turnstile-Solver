@@ -264,6 +264,56 @@ class TurnstileSolver:
                         debug(f"Elapsed time: {result.elapsed_time_seconds} seconds")
                         debug("Browser closed. Returning result.")
                         
+            elif self.browser_type == "msedge":
+                with sync_playwright() as playwright:
+                    browser = playwright.chromium.launch_persistent_context(
+                        user_data_dir=f"{os.getcwd()}/tmp/turnstile-edge-{''.join(random.choices(string.ascii_letters + string.digits, k=10))}",
+                        channel="msedge",
+                        headless=self.headless,
+                        no_viewport=True,
+                    )
+                    
+                    try:
+                        page = self._setup_page(browser, url, sitekey, action, cdata)
+                        turnstile_value = self._get_turnstile_response(page, invisible=invisible)
+                        
+                        elapsed_time = round(time.time() - start_time, 3)
+
+                        if not turnstile_value:
+                            result = TurnstileResult(
+                                turnstile_value=None,
+                                elapsed_time_seconds=elapsed_time,
+                                status="failure",
+                                reason="Max attempts reached without token retrieval"
+                            )
+                            self.log.failure("Failed to retrieve Turnstile value.")
+                        else:
+                            result = TurnstileResult(
+                                turnstile_value=turnstile_value,
+                                elapsed_time_seconds=elapsed_time,
+                                status="success"
+                            )
+                            self.loader.stop()
+                            self.log.message(
+                                "Cloudflare",
+                                f"Successfully solved captcha: {turnstile_value[:45]}...",
+                                start=start_time,
+                                end=time.time()
+                            )
+
+                    except Exception as e:
+                        self.log.failure(f"Error during captcha solving: {str(e)}")
+                        raise
+
+                    finally:
+                        try:
+                            browser.close()
+                        except Exception as e:
+                            self.log.failure(f"Error closing browser: {str(e)}")
+
+                        debug(f"Elapsed time: {result.elapsed_time_seconds} seconds")
+                        debug("Browser closed. Returning result.")
+
             elif self.browser_type == "camoufox":
                 browser = Camoufox(headless=self.headless).start()
                 
@@ -332,6 +382,7 @@ def get_turnstile_token(headless: bool = False, url: str = None, sitekey: str = 
         'chromium',
         'chrome',
         'camoufox',
+        'msedge',
     ]
     if browser_type not in browser_types:
         log.error(f"Unknown browser type: {browser_type} Available browser types: {browser_types}")

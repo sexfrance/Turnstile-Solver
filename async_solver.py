@@ -254,6 +254,50 @@ class AsyncTurnstileSolver:
                     debug(f"Elapsed time: {result.elapsed_time_seconds} seconds")
                     debug("Browser closed. Returning result.")
 
+            elif self.browser_type == "msedge":
+                playwright = await async_playwright().start()
+                browser = await playwright.chromium.launch_persistent_context(
+                    user_data_dir=f"{os.getcwd()}/tmp/turnstile-edge-{''.join(random.choices(string.ascii_letters + string.digits, k=10))}",
+                    channel="msedge",
+                    headless=self.headless,
+                    no_viewport=True,
+                )
+
+                try:
+                    page = await self._setup_page(browser, url, sitekey, action, cdata)
+                    turnstile_value = await self._get_turnstile_response(page, invisible=invisible)
+
+                    elapsed_time = round(time.time() - start_time, 3)
+
+                    if not turnstile_value:
+                        result = TurnstileResult(
+                            turnstile_value=None,
+                            elapsed_time_seconds=elapsed_time,
+                            status="failure",
+                            reason="Max attempts reached without token retrieval"
+                        )
+                        self.log.failure("Failed to retrieve Turnstile value.")
+                    else:
+                        result = TurnstileResult(
+                            turnstile_value=turnstile_value,
+                            elapsed_time_seconds=elapsed_time,
+                            status="success"
+                        )
+                        self.loader.stop()
+                        self.log.message(
+                            "Cloudflare",
+                            f"Successfully solved captcha: {turnstile_value[:45]}...",
+                            start=start_time,
+                            end=time.time()
+                        )
+
+                finally:
+                    await browser.close()
+                    await playwright.stop()
+                    
+                    debug(f"Elapsed time: {result.elapsed_time_seconds} seconds")
+                    debug("Browser closed. Returning result.")
+
             elif self.browser_type == "camoufox":
                 browser = await AsyncCamoufox(headless=self.headless).start()
 
@@ -316,6 +360,7 @@ async def get_turnstile_token(headless: bool = False, url: str = None, sitekey: 
         'chromium',
         'chrome',
         'camoufox',
+        'msedge',
     ]
     if browser_type not in browser_types:
         log.error(f"Unknown browser type: {browser_type} Available browser types: {browser_types}")

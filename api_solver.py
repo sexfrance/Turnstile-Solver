@@ -127,7 +127,7 @@ class TurnstileAPIServer:
 
     async def _initialize_browser(self) -> None:
         """Initialize the browser and create the page pool."""
-        if self.browser_type == "chromium" or self.browser_type == "chrome":
+        if self.browser_type == "chromium" or self.browser_type == "chrome" or self.browser_type == "msedge":
             playwright = await async_playwright().start()
         elif self.browser_type == "camoufox":
             camoufox = AsyncCamoufox(headless=self.headless)
@@ -144,6 +144,15 @@ class TurnstileAPIServer:
                 browser = await playwright.chromium.launch_persistent_context(
                     user_data_dir=f"{os.getcwd()}/tmp/turnstile-chrome-{''.join(random.choices(string.ascii_letters + string.digits, k=10))}",
                     channel="chrome",
+                    headless=self.headless,
+                    no_viewport=True,
+                )
+                page = browser.pages[0]
+                
+            elif self.browser_type == "msedge":
+                browser = await playwright.chromium.launch_persistent_context(
+                    user_data_dir=f"{os.getcwd()}/tmp/turnstile-edge-{''.join(random.choices(string.ascii_letters + string.digits, k=10))}",
+                    channel="msedge",
                     headless=self.headless,
                     no_viewport=True,
                 )
@@ -353,7 +362,7 @@ def parse_args():
     parser.add_argument('--headless', action='store_true', help='Run the browser in headless mode')
     parser.add_argument('--useragent', type=str, default=None, help='Custom User-Agent string')
     parser.add_argument('--debug', action='store_true', help='Enable debug mode')
-    parser.add_argument('--browser_type', type=str, default='chromium', choices=['chromium', 'chrome', 'camoufox'], help='Browser type to use')
+    parser.add_argument('--browser_type', type=str, default='chromium', help='Specify the browser type for the solver. Supported options: chromium, chrome, msedge, camoufox (default: chromium)')    
     parser.add_argument('--thread', type=int, default=1, help='Number of browser threads')
     parser.add_argument('--host', type=str, default='127.0.0.1', help='Host IP address')
     parser.add_argument('--port', type=int, default=5000, help='Port to listen on')
@@ -372,10 +381,19 @@ def create_app(headless=False, useragent=None, debug=False, browser_type="chromi
 
 if __name__ == "__main__":
     args = parse_args()
+
+    browser_types = [
+        'chromium',
+        'chrome',
+        'msedge',
+        'camoufox',
+    ]
     
     if args.headless and args.useragent is None and args.browser_type != "camoufox":
-        log.error("You must specify a User-Agent for headless mode or use camoufox")
-        sys.exit(1)
+        log.critical("You must specify a User-Agent for headless mode or use camoufox")
+    
+    if args.browser_type not in browser_types:
+        log.critical("Invalid browser type specified. Supported options: chromium, chrome, msedge, camoufox")
         
     app = create_app(
         headless=args.headless,
